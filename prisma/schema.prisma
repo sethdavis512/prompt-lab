@@ -1,0 +1,139 @@
+generator client {
+    provider      = "prisma-client"
+    output        = "../app/generated/prisma"
+    binaryTargets = ["native", "darwin-arm64"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    USER
+    EDITOR
+    ADMIN
+}
+
+enum OrganizationRole {
+    OWNER
+    ADMIN
+    MEMBER
+}
+
+model User {
+    id                  String               @id @default(cuid())
+    createdAt           DateTime             @default(now())
+    updatedAt           DateTime             @default(now()) @updatedAt
+    email               String               @unique
+    name                String?
+    emailVerified       Boolean              @default(false)
+    image               String?
+    bio                 String?
+    website             String?
+    location            String?
+    phoneNumber         String?
+    role                Role                 @default(USER)
+    sessions            Session[]
+    accounts            Account[]
+    organizationMembers OrganizationMember[]
+    ownedOrganizations  Organization[]       @relation("OrganizationOwner")
+
+    @@index([email])
+    @@map("user")
+}
+
+model Session {
+    id        String   @id
+    expiresAt DateTime
+    token     String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    ipAddress String?
+    userAgent String?
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([token])
+    @@map("session")
+}
+
+model Account {
+    id                    String    @id
+    accountId             String
+    providerId            String
+    userId                String
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?
+    createdAt             DateTime  @default(now())
+    updatedAt             DateTime  @updatedAt
+
+    @@map("account")
+}
+
+model Verification {
+    id         String   @id
+    identifier String
+    value      String
+    expiresAt  DateTime
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @default(now()) @updatedAt
+
+    @@map("verification")
+}
+
+model Organization {
+    id        String    @id @default(cuid())
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    name      String
+    slug      String    @unique
+    ownerId   String
+    owner     User      @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+    deletedAt DateTime?
+
+    members     OrganizationMember[]
+    invitations OrganizationInvitation[]
+
+    @@index([slug])
+    @@index([ownerId])
+    @@map("organization")
+}
+
+model OrganizationMember {
+    id             String           @id @default(cuid())
+    createdAt      DateTime         @default(now())
+    updatedAt      DateTime         @updatedAt
+    organizationId String
+    organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    userId         String
+    user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+    role           OrganizationRole @default(MEMBER)
+
+    @@unique([organizationId, userId])
+    @@index([userId])
+    @@map("organization_member")
+}
+
+model OrganizationInvitation {
+    id             String           @id @default(cuid())
+    createdAt      DateTime         @default(now())
+    updatedAt      DateTime         @updatedAt
+    organizationId String
+    organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    email          String
+    role           OrganizationRole @default(MEMBER)
+    token          String           @unique
+    expiresAt      DateTime
+    acceptedAt     DateTime?
+
+    @@index([token])
+    @@index([email])
+    @@map("organization_invitation")
+}

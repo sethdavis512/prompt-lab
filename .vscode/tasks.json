@@ -1,0 +1,184 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "dev",
+            "type": "shell",
+            "command": "npm run dev",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*)$",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "."
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "npm run build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "start",
+            "type": "shell",
+            "command": "npm start",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "typecheck",
+            "type": "shell",
+            "command": "npm run typecheck",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": ["$tsc"]
+        },
+        {
+            "label": "seed",
+            "type": "shell",
+            "command": "npm run seed",
+            "problemMatcher": []
+        },
+        {
+            "label": "prisma:generate",
+            "type": "shell",
+            "command": "npx prisma generate",
+            "problemMatcher": []
+        },
+        {
+            "label": "prisma:migrate",
+            "type": "shell",
+            "command": "npx prisma migrate dev",
+            "problemMatcher": []
+        },
+        {
+            "label": "prisma:studio",
+            "type": "shell",
+            "command": "npx prisma studio",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "railway:migrate",
+            "type": "shell",
+            "command": "railway run -- bash -lc \"cd /app && npx prisma migrate deploy\"",
+            "problemMatcher": []
+        },
+        {
+            "label": "railway:seed",
+            "type": "shell",
+            "command": "railway run -- bash -lc \"cd /app && npm run seed\"",
+            "problemMatcher": []
+        },
+        {
+            "label": "railway:shell",
+            "type": "shell",
+            "command": "railway shell",
+            "problemMatcher": []
+        },
+        {
+            "label": "test",
+            "type": "shell",
+            "command": "npm test",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "test:ui",
+            "type": "shell",
+            "command": "npm run test:ui",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "test:run",
+            "type": "shell",
+            "command": "npm run test:run",
+            "problemMatcher": []
+        },
+        {
+            "label": "test:coverage",
+            "type": "shell",
+            "command": "npm run test:coverage",
+            "problemMatcher": []
+        },
+        {
+            "label": "e2e",
+            "type": "shell",
+            "command": "npm run e2e",
+            "problemMatcher": []
+        },
+        {
+            "label": "e2e:ui",
+            "type": "shell",
+            "command": "npm run e2e:ui",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "e2e:headed",
+            "type": "shell",
+            "command": "npm run e2e:headed",
+            "problemMatcher": []
+        },
+        {
+            "label": "e2e:debug",
+            "type": "shell",
+            "command": "npm run e2e:debug",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "e2e:report",
+            "type": "shell",
+            "command": "npm run e2e:report",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ]
+}

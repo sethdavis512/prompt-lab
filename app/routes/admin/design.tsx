@@ -1,0 +1,998 @@
+import { Suspense, useState } from 'react';
+import { Form } from 'react-router';
+import type { Route } from './+types/design';
+import { Accordion, AccordionItem } from '~/components/Accordion';
+import { Alert } from '~/components/Alert';
+import { Avatar, AvatarGroup } from '~/components/Avatar';
+import { Badge } from '~/components/Badge';
+import { Button } from '~/components/Button';
+import { Card } from '~/components/Card';
+import { Checkbox } from '~/components/Checkbox';
+import { Code } from '~/components/Code';
+import { Container } from '~/components/Container';
+import { Diff } from '~/components/Diff';
+import { FileInput } from '~/components/FileInput';
+import { Hero } from '~/components/Hero';
+import { Modal, ModalActions } from '~/components/Modal';
+import { Radio } from '~/components/Radio';
+import { Range } from '~/components/Range';
+import { Select } from '~/components/Select';
+import {
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableHeaderCell,
+    TableCell,
+} from '~/components/Table';
+import { Tab, Tabs } from '~/components/Tabs';
+import { Textarea } from '~/components/Textarea';
+import { TextInput } from '~/components/TextInput';
+import { Toggle } from '~/components/Toggle';
+import { Tooltip } from '~/components/Tooltip';
+
+export async function action({ request }: Route.ActionArgs) {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+
+    if (!file || file.size === 0) {
+        return { error: 'Please select a file' };
+    }
+
+    try {
+        const baseUrl = new URL(request.url).origin;
+        const cloudinaryEndpoint = new URL('/api/cloudinary', baseUrl);
+
+        const response = await fetch(cloudinaryEndpoint, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            return { error: data.error || 'Upload failed' };
+        }
+
+        return { success: true, upload: data };
+    } catch (error) {
+        return {
+            error: error instanceof Error ? error.message : 'Upload failed',
+        };
+    }
+}
+
+export default function DesignRoute({ actionData }: Route.ComponentProps) {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState(0);
+
+    return (
+        <Container className="flex flex-col gap-12 py-8">
+            <h1 className="text-4xl font-bold">Design System Showcase</h1>
+
+            {/* File Input Section */}
+            <section className="space-y-4">
+                <h2 className="text-2xl font-bold">File Upload</h2>
+
+                <Form
+                    method="POST"
+                    encType="multipart/form-data"
+                    className="space-y-4"
+                >
+                    <FileInput
+                        name="file"
+                        label="Upload to Cloudinary"
+                        helperText="Supported formats: .png, .jpg, .jpeg"
+                        accept=".png,.jpg,.jpeg"
+                        color="primary"
+                        size="lg"
+                        error={actionData?.error}
+                    />
+                    <Button type="submit" status="primary">
+                        Upload File
+                    </Button>
+                </Form>
+
+                {actionData?.success && actionData.upload && (
+                    <Alert status="success">
+                        <div className="flex flex-col gap-2">
+                            <span className="font-semibold">
+                                Upload successful!
+                            </span>
+                            <a
+                                href={actionData.upload.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="link link-primary"
+                            >
+                                View uploaded file
+                            </a>
+                            <div className="text-sm opacity-70">
+                                <div>Format: {actionData.upload.format}</div>
+                                <div>
+                                    Size: {actionData.upload.width}x
+                                    {actionData.upload.height}
+                                </div>
+                                <div>
+                                    File size:{' '}
+                                    {(actionData.upload.bytes / 1024).toFixed(
+                                        2,
+                                    )}{' '}
+                                    KB
+                                </div>
+                            </div>
+                        </div>
+                    </Alert>
+                )}
+
+                <Code
+                    lines={[
+                        {
+                            content:
+                                '<Form method="post" encType="multipart/form-data">',
+                        },
+                        { content: '  <FileInput' },
+                        { content: '    name="file"' },
+                        { content: '    label="Upload to Cloudinary"' },
+                        { content: '    accept=".png,.jpg,.jpeg"' },
+                        { content: '    color="primary"' },
+                        { content: '    error={actionData?.error}' },
+                        { content: '  />' },
+                        { content: '  <Button type="submit">Upload</Button>' },
+                        { content: '</Form>' },
+                    ]}
+                />
+            </section>
+
+            {/* Buttons Section */}
+            <section className="space-y-4">
+                <h2 className="text-2xl font-bold">Buttons</h2>
+
+                <div className="space-y-6">
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">Variants</h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Button>Default</Button>
+                            <Button variant="outline">Outline</Button>
+                            <Button variant="soft">Soft</Button>
+                            <Button variant="dash">Dash</Button>
+                            <Button variant="ghost">Ghost</Button>
+                            <Button variant="link">Link</Button>
+                        </div>
+                        <Code
+                            lines={[
+                                { content: '<Button>Outline</Button>' },
+                                {
+                                    content:
+                                        '<Button variant="outline">Outline</Button>',
+                                },
+                                {
+                                    content:
+                                        '<Button variant="soft">Soft</Button>',
+                                },
+                                {
+                                    content:
+                                        '<Button variant="dash">Dash</Button>',
+                                },
+                                {
+                                    content:
+                                        '<Button variant="ghost">Ghost</Button>',
+                                },
+                                {
+                                    content:
+                                        '<Button variant="link">Link</Button>',
+                                },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">Colors</h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Button status="accent">Accent</Button>
+                            <Button status="error">Error</Button>
+                            <Button status="info">Info</Button>
+                            <Button status="neutral">Neutral</Button>
+                            <Button status="primary">Primary</Button>
+                            <Button status="secondary">Secondary</Button>
+                            <Button status="success">Success</Button>
+                            <Button status="warning">Warning</Button>
+                        </div>
+                        <Code
+                            lines={[
+                                {
+                                    content:
+                                        '<Button status="primary">Primary</Button>',
+                                },
+                                {
+                                    content:
+                                        '<Button status="error">Error</Button>',
+                                },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">Shapes</h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Button square>+</Button>
+                            <Button circle>+</Button>
+                            <Button wide>Wide</Button>
+                        </div>
+                        <Code
+                            lines={[
+                                { content: '<Button circle>+</Button>' },
+                                { content: '<Button wide>Wide</Button>' },
+                            ]}
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Form Controls Section */}
+            <section className="space-y-4">
+                <h2 className="text-2xl font-bold">Form Controls</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                        <TextInput
+                            label="Text Input"
+                            placeholder="Enter text..."
+                            helperText="This is helper text"
+                        />
+                        <Code
+                            lines={[
+                                { content: '<TextInput' },
+                                { content: '  label="Text Input"' },
+                                { content: '  placeholder="Enter text..."' },
+                                { content: '  helperText="Helper text"' },
+                                { content: '/>' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <Select
+                            label="Select"
+                            options={[
+                                { value: '1', label: 'Option 1' },
+                                { value: '2', label: 'Option 2' },
+                                { value: '3', label: 'Option 3' },
+                            ]}
+                            helperText="Choose an option"
+                        />
+                        <Code
+                            lines={[
+                                { content: '<Select' },
+                                { content: '  label="Select"' },
+                                { content: '  options={options}' },
+                                { content: '/>' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <Textarea
+                            label="Textarea"
+                            placeholder="Enter longer text..."
+                            rows={3}
+                        />
+                        <Code
+                            lines={[
+                                { content: '<Textarea' },
+                                { content: '  label="Textarea"' },
+                                { content: '  rows={3}' },
+                                { content: '/>' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <Checkbox label="Checkbox Option" />
+                        <Radio label="Radio Option" name="radio-demo" />
+                        <Toggle label="Toggle Option" />
+                        <Code
+                            lines={[
+                                { content: '<Checkbox label="Option" />' },
+                                {
+                                    content:
+                                        '<Radio label="Option" name="group" />',
+                                },
+                                { content: '<Toggle label="Option" />' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <Range
+                            label="Range Slider"
+                            min={0}
+                            max={100}
+                            defaultValue={50}
+                        />
+                        <Code
+                            lines={[
+                                { content: '<Range' },
+                                { content: '  label="Range Slider"' },
+                                { content: '  min={0} max={100}' },
+                                { content: '/>' },
+                            ]}
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Data Display Section */}
+            <section className="space-y-6">
+                <h2 className="text-2xl font-bold">Data Display</h2>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Alerts</h3>
+                    <div className="space-y-3 mb-3">
+                        <Alert status="info">
+                            <span>
+                                Information: This is an info alert message
+                            </span>
+                        </Alert>
+                        <Alert status="success">
+                            <span>
+                                Success: Operation completed successfully
+                            </span>
+                        </Alert>
+                        <Alert status="warning">
+                            <span>
+                                Warning: Please review before proceeding
+                            </span>
+                        </Alert>
+                        <Alert status="error">
+                            <span>Error: Something went wrong</span>
+                        </Alert>
+                        <Alert status="info" variant="outline">
+                            <span>Outlined info alert</span>
+                        </Alert>
+                        <Alert status="success" variant="soft">
+                            <span>Soft success alert</span>
+                        </Alert>
+                        <Alert
+                            status="warning"
+                            icon={
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 w-6 shrink-0 stroke-current"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                    />
+                                </svg>
+                            }
+                        >
+                            <span>Alert with custom icon</span>
+                        </Alert>
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Alert status="info">' },
+                            { content: '  <span>Info message</span>' },
+                            { content: '</Alert>' },
+                            { content: '' },
+                            {
+                                content:
+                                    '<Alert status="success" variant="outline">',
+                            },
+                            { content: '  <span>Outlined success</span>' },
+                            { content: '</Alert>' },
+                            { content: '' },
+                            {
+                                content:
+                                    '<Alert status="warning" icon={<Icon />}>',
+                            },
+                            { content: '  <span>With icon</span>' },
+                            { content: '</Alert>' },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Cards</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                        <Card
+                            title="Card Title"
+                            variant="border"
+                            actions={<Button size="sm">Action</Button>}
+                        >
+                            <p>Card content goes here</p>
+                        </Card>
+
+                        <Card
+                            title="With Image"
+                            image={{
+                                src: 'https://picsum.photos/400/200',
+                                alt: 'Placeholder',
+                            }}
+                        >
+                            <p>Image at top</p>
+                        </Card>
+
+                        <Card size="lg" variant="dash">
+                            <p>Large card with dash border</p>
+                        </Card>
+                    </div>
+                    <Code
+                        lines={[
+                            {
+                                content:
+                                    '<Card title="Title" variant="border">',
+                            },
+                            { content: '  <p>Content</p>' },
+                            { content: '</Card>' },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Badges</h3>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                        <Badge color="primary">Primary</Badge>
+                        <Badge color="secondary">Secondary</Badge>
+                        <Badge color="accent">Accent</Badge>
+                        <Badge variant="outline" color="success">
+                            Outline
+                        </Badge>
+                        <Badge variant="soft" color="warning">
+                            Soft
+                        </Badge>
+                        <Badge variant="ghost" color="error">
+                            Ghost
+                        </Badge>
+                    </div>
+                    <Code
+                        lines={[
+                            {
+                                content:
+                                    '<Badge color="primary">Primary</Badge>',
+                            },
+                            {
+                                content:
+                                    '<Badge variant="outline">Outline</Badge>',
+                            },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Avatars</h3>
+                    <div className="flex flex-wrap gap-4 items-center mb-3">
+                        <Avatar src="https://picsum.photos/100/100" size={16} />
+                        <Avatar status="online" placeholder>
+                            <span className="text-xl">AB</span>
+                        </Avatar>
+                        <Avatar
+                            src="https://picsum.photos/101/101"
+                            shape="squircle"
+                            size={16}
+                        />
+                        <AvatarGroup>
+                            <Avatar src="https://picsum.photos/102/102" />
+                            <Avatar src="https://picsum.photos/103/103" />
+                            <Avatar src="https://picsum.photos/104/104" />
+                        </AvatarGroup>
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Avatar src="/img.jpg" size={16} />' },
+                            {
+                                content:
+                                    '<Avatar status="online" placeholder>AB</Avatar>',
+                            },
+                            { content: '<AvatarGroup>...</AvatarGroup>' },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Table</h3>
+                    <div className="mb-3">
+                        <Table zebra scrollable>
+                            <TableHead>
+                                <TableRow>
+                                    <TableHeaderCell>Name</TableHeaderCell>
+                                    <TableHeaderCell>Role</TableHeaderCell>
+                                    <TableHeaderCell>Status</TableHeaderCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                <TableRow hover>
+                                    <TableCell>John Doe</TableCell>
+                                    <TableCell>Developer</TableCell>
+                                    <TableCell>
+                                        <Badge color="success">Active</Badge>
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow hover>
+                                    <TableCell>Jane Smith</TableCell>
+                                    <TableCell>Designer</TableCell>
+                                    <TableCell>
+                                        <Badge color="warning">Away</Badge>
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow hover>
+                                    <TableCell>Bob Johnson</TableCell>
+                                    <TableCell>Manager</TableCell>
+                                    <TableCell>
+                                        <Badge color="error">Offline</Badge>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Table zebra scrollable>' },
+                            {
+                                content:
+                                    '  <TableHead>...<TableRow>...</TableHead>',
+                            },
+                            {
+                                content:
+                                    '  <TableBody>...<TableRow hover>...</TableBody>',
+                            },
+                            { content: '</Table>' },
+                        ]}
+                    />
+                </div>
+            </section>
+
+            {/* Layout & Navigation Section */}
+            <section className="space-y-6">
+                <h2 className="text-2xl font-bold">Layout & Navigation</h2>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Hero</h3>
+                    <div className="mb-3">
+                        <Hero
+                            overlay
+                            image="https://picsum.photos/1200/400"
+                            className="rounded-lg min-h-[300px]"
+                        >
+                            <div className="text-center text-neutral-content">
+                                <h1 className="text-5xl font-bold">
+                                    Hero Section
+                                </h1>
+                                <p className="py-6">
+                                    A large featured section with overlay
+                                </p>
+                                <Button status="primary">Get Started</Button>
+                            </div>
+                        </Hero>
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Hero overlay image="/bg.jpg">' },
+                            { content: '  <div>Content</div>' },
+                            { content: '</Hero>' },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Tabs</h3>
+                    <div className="mb-3">
+                        <Tabs variant="box">
+                            <Tab
+                                active={activeTab === 0}
+                                onClick={() => setActiveTab(0)}
+                            >
+                                Tab 1
+                            </Tab>
+                            <Tab
+                                active={activeTab === 1}
+                                onClick={() => setActiveTab(1)}
+                            >
+                                Tab 2
+                            </Tab>
+                            <Tab
+                                active={activeTab === 2}
+                                onClick={() => setActiveTab(2)}
+                            >
+                                Tab 3
+                            </Tab>
+                        </Tabs>
+                        <div className="p-4 bg-base-200 rounded-b-lg">
+                            Tab {activeTab + 1} content
+                        </div>
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Tabs variant="box">' },
+                            { content: '  <Tab active={active}>Tab 1</Tab>' },
+                            { content: '  <Tab>Tab 2</Tab>' },
+                            { content: '</Tabs>' },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Accordion</h3>
+                    <div className="mb-3">
+                        <Accordion name="demo-accordion">
+                            <AccordionItem
+                                title="First Item"
+                                name="demo-accordion"
+                                variant="arrow"
+                                defaultOpen
+                            >
+                                Content for the first accordion item
+                            </AccordionItem>
+                            <AccordionItem
+                                title="Second Item"
+                                name="demo-accordion"
+                                variant="arrow"
+                            >
+                                Content for the second accordion item
+                            </AccordionItem>
+                            <AccordionItem
+                                title="Third Item"
+                                name="demo-accordion"
+                                variant="plus"
+                            >
+                                Content for the third accordion item with plus
+                                icon
+                            </AccordionItem>
+                        </Accordion>
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Accordion name="group">' },
+                            {
+                                content:
+                                    '  <AccordionItem title="Item" name="group" variant="arrow">',
+                            },
+                            { content: '    Content' },
+                            { content: '  </AccordionItem>' },
+                            { content: '</Accordion>' },
+                        ]}
+                    />
+                </div>
+            </section>
+
+            {/* Interactive Section */}
+            <section className="space-y-6">
+                <h2 className="text-2xl font-bold">Interactive Components</h2>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Modal</h3>
+                    <div className="mb-3">
+                        <Button onClick={() => setModalOpen(true)}>
+                            Open Modal
+                        </Button>
+                        <Modal
+                            open={modalOpen}
+                            onClose={() => setModalOpen(false)}
+                            title="Modal Title"
+                            placement="middle"
+                        >
+                            <p className="py-4">
+                                This is modal content. You can put any content
+                                here.
+                            </p>
+                            <ModalActions>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setModalOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    status="primary"
+                                    onClick={() => setModalOpen(false)}
+                                >
+                                    Confirm
+                                </Button>
+                            </ModalActions>
+                        </Modal>
+                    </div>
+                    <Code
+                        lines={[
+                            {
+                                content:
+                                    '<Modal open={open} onClose={handleClose} title="Title">',
+                            },
+                            { content: '  <p>Content</p>' },
+                            { content: '  <ModalActions>...</ModalActions>' },
+                            { content: '</Modal>' },
+                        ]}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Diff Comparison</h3>
+                    <div className="mb-3">
+                        <Diff
+                            aspectRatio="aspect-video"
+                            item1={
+                                <img
+                                    src="https://picsum.photos/seed/before/1200/675"
+                                    alt="Before"
+                                />
+                            }
+                            item2={
+                                <img
+                                    src="https://picsum.photos/seed/after/1200/675"
+                                    alt="After"
+                                />
+                            }
+                        />
+                    </div>
+                    <Code
+                        lines={[
+                            { content: '<Diff' },
+                            { content: '  aspectRatio="aspect-16/9"' },
+                            { content: '  item1={<img src="/before.jpg" />}' },
+                            { content: '  item2={<img src="/after.jpg" />}' },
+                            { content: '/>' },
+                        ]}
+                    />
+                </div>
+            </section>
+
+            {/* Suspense Section */}
+            <section className="space-y-6">
+                <h2 className="text-2xl font-bold">Streaming with Suspense</h2>
+
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">
+                        Deferred Data Loading
+                    </h3>
+                    <p className="text-base-content/70">
+                        React Router supports streaming non-critical data with
+                        Suspense. This example shows a fast-loading critical
+                        section and a slow-loading deferred section.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-3">
+                        {/* Critical data - loads immediately */}
+                        <Card title="Critical Data" variant="border">
+                            <div className="space-y-2">
+                                <p className="text-sm text-base-content/70">
+                                    This section loads immediately (awaited in
+                                    loader)
+                                </p>
+                                <div className="stats stats-vertical shadow">
+                                    <div className="stat">
+                                        <div className="stat-title">
+                                            Page Views
+                                        </div>
+                                        <div className="stat-value text-primary">
+                                            1,234
+                                        </div>
+                                        <div className="stat-desc">
+                                            Fast-loading data
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Deferred data - streams in with Suspense */}
+                        <Card title="Deferred Data" variant="border">
+                            <div className="space-y-2">
+                                <p className="text-sm text-base-content/70">
+                                    This section would show skeleton, then
+                                    stream in
+                                </p>
+                                <Suspense
+                                    fallback={
+                                        <div className="space-y-2">
+                                            <div className="skeleton h-4 w-full" />
+                                            <div className="skeleton h-4 w-3/4" />
+                                            <div className="skeleton h-12 w-full" />
+                                        </div>
+                                    }
+                                >
+                                    {/* In real app, this would use <Await> component */}
+                                    <div className="stats stats-vertical shadow">
+                                        <div className="stat">
+                                            <div className="stat-title">
+                                                Analytics
+                                            </div>
+                                            <div className="stat-value text-secondary">
+                                                5,678
+                                            </div>
+                                            <div className="stat-desc">
+                                                Streamed data
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Suspense>
+                            </div>
+                        </Card>
+                    </div>
+
+                    <Code
+                        lines={[
+                            {
+                                content:
+                                    '// Loader: Return promise without awaiting',
+                            },
+                            { content: 'export async function loader() {' },
+                            {
+                                content:
+                                    '  const critical = await getCritical();',
+                            },
+                            {
+                                content:
+                                    '  const deferred = getDeferred(); // No await!',
+                            },
+                            { content: '  return { critical, deferred };' },
+                            { content: '}' },
+                            { content: '' },
+                            { content: '// Component: Use Suspense + Await' },
+                            {
+                                content:
+                                    'export default function Route({ loaderData }) {',
+                            },
+                            { content: '  return (' },
+                            { content: '    <div>' },
+                            { content: '      <h1>{loaderData.critical}</h1>' },
+                            {
+                                content:
+                                    '      <Suspense fallback={<Skeleton />}>',
+                            },
+                            {
+                                content:
+                                    '        <Await resolve={loaderData.deferred}>',
+                            },
+                            {
+                                content:
+                                    '          {(data) => <Display data={data} />}',
+                            },
+                            { content: '        </Await>' },
+                            { content: '      </Suspense>' },
+                            { content: '    </div>' },
+                            { content: '  );' },
+                            { content: '}' },
+                        ]}
+                    />
+                </div>
+            </section>
+
+            {/* Tooltip Section */}
+            <section className="space-y-4">
+                <h2 className="text-2xl font-bold">Tooltips</h2>
+
+                <div className="space-y-6">
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">Positions</h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Tooltip tip="Top tooltip" position="top" open>
+                                <Button>Top</Button>
+                            </Tooltip>
+                            <Tooltip
+                                tip="Bottom tooltip"
+                                position="bottom"
+                                open
+                            >
+                                <Button>Bottom</Button>
+                            </Tooltip>
+                            <Tooltip tip="Left tooltip" position="left" open>
+                                <Button>Left</Button>
+                            </Tooltip>
+                            <Tooltip tip="Right tooltip" position="right" open>
+                                <Button>Right</Button>
+                            </Tooltip>
+                        </div>
+                        <Code
+                            lines={[
+                                {
+                                    content:
+                                        '<Tooltip tip="Hello" position="top">',
+                                },
+                                { content: '  <Button>Hover me</Button>' },
+                                { content: '</Tooltip>' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">Colors</h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Tooltip tip="Neutral" color="neutral" open>
+                                <Button status="neutral">Neutral</Button>
+                            </Tooltip>
+                            <Tooltip tip="Primary" color="primary" open>
+                                <Button status="primary">Primary</Button>
+                            </Tooltip>
+                            <Tooltip tip="Secondary" color="secondary" open>
+                                <Button status="secondary">Secondary</Button>
+                            </Tooltip>
+                            <Tooltip tip="Accent" color="accent" open>
+                                <Button status="accent">Accent</Button>
+                            </Tooltip>
+                            <Tooltip tip="Info" color="info" open>
+                                <Button status="info">Info</Button>
+                            </Tooltip>
+                            <Tooltip tip="Success" color="success" open>
+                                <Button status="success">Success</Button>
+                            </Tooltip>
+                            <Tooltip tip="Warning" color="warning" open>
+                                <Button status="warning">Warning</Button>
+                            </Tooltip>
+                            <Tooltip tip="Error" color="error" open>
+                                <Button status="error">Error</Button>
+                            </Tooltip>
+                        </div>
+                        <Code
+                            lines={[
+                                {
+                                    content:
+                                        '<Tooltip tip="Info" color="info">',
+                                },
+                                { content: '  <Button>Hover me</Button>' },
+                                { content: '</Tooltip>' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">
+                            Custom Content
+                        </h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Tooltip
+                                content={
+                                    <div className="animate-bounce text-orange-400 -rotate-10 text-2xl font-black">
+                                        Wow!
+                                    </div>
+                                }
+                                open
+                            >
+                                <Button>Custom Content</Button>
+                            </Tooltip>
+                        </div>
+                        <Code
+                            lines={[
+                                { content: '<Tooltip' },
+                                {
+                                    content:
+                                        '  content={<div>Custom JSX</div>}',
+                                },
+                                { content: '>' },
+                                { content: '  <Button>Hover me</Button>' },
+                                { content: '</Tooltip>' },
+                            ]}
+                        />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-lg font-semibold">
+                            Interactive (Hover)
+                        </h3>
+                        <div className="flex flex-wrap gap-4 mb-3">
+                            <Tooltip tip="Hover over me!">
+                                <Button>Hover me</Button>
+                            </Tooltip>
+                            <Tooltip
+                                tip="This tooltip appears on hover"
+                                position="bottom"
+                            >
+                                <Button variant="outline">Another one</Button>
+                            </Tooltip>
+                        </div>
+                        <Code
+                            lines={[
+                                { content: '<Tooltip tip="Appears on hover">' },
+                                { content: '  <Button>Hover me</Button>' },
+                                { content: '</Tooltip>' },
+                            ]}
+                        />
+                    </div>
+                </div>
+            </section>
+        </Container>
+    );
+}

@@ -1,0 +1,45 @@
+{
+    "servers": {
+        "React Router Docs": {
+            "type": "sse",
+            "url": "https://gitmcp.io/remix-run/react-router"
+        },
+        "context7": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "@upstash/context7-mcp@latest"]
+        },
+        "daisyUI": {
+            "type": "sse",
+            "url": "https://gitmcp.io/saadeghi/daisyui"
+        },
+        "Railway": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "@railway/mcp-server"]
+        },
+        "PostHog": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote@latest",
+                "https://mcp.posthog.com/sse",
+                "--header",
+                "Authorization:Bearer ${POSTHOG_AUTH_HEADER}"
+            ],
+            "env": {
+                // Must be set in .zshrc, .bashrc, or system environment
+                // Ex: export POSTHOG_PERSONAL_API_KEY=your_api_key
+                "POSTHOG_AUTH_HEADER": "${env:POSTHOG_PERSONAL_API_KEY}"
+            }
+        },
+        "Playwright": {
+            "command": "npx",
+            "args": ["@playwright/mcp@latest"]
+        },
+        "Prisma (Local)": {
+            "command": "npx",
+            "args": ["-y", "prisma", "mcp"]
+        }
+    }
+}
